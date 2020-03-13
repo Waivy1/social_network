@@ -16,7 +16,7 @@ class LikedPosts(models.Model):
     is_liked = models.BooleanField(null=False, default=True)
 
     def get_likes(self):
-        return models.LikedPosts.objects.filter(post_id=self.post_id, is_liked=True).count()
+        return LikedPosts.objects.filter(post_id=self.post_id, is_liked=True).count()
 
 
 
