@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.core.exceptions import ObjectDoesNotExist
-from .helpers import check_login_password_input, input_validate, ValidationError, EmptyValueError
+from .helpers import input_validate, ValidationError, EmptyValueError
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -130,7 +130,7 @@ class DislikePost(View):
             user_obj = models.User.objects.get(id=input_user_id)
             post_obj = models.Post.objects.get(id=input_post_id)
         except ObjectDoesNotExist as e:
-            return JsonResponse({'message': 'user or post don`t exist '})
+            return JsonResponse({'message': 'user or post don`t exist '}, status=400)
 
         liked_posts_obj = models.LikedPosts.objects.get(post_id=input_post_id, user_id=input_user_id)
         liked_posts_obj.is_liked = False

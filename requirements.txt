@@ -1,2 +1,4 @@
 requests
 djangorestframework
+django_nose
+coverage

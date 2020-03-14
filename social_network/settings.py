@@ -29,7 +29,9 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
-
+INSTALLED_PROJECT_APPS = [
+    'core'
+]
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,10 +39,27 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
     'rest_framework',
 
+] + INSTALLED_PROJECT_APPS
+# TEST_RUNNER = 'payment_gateway_project.runner.CustomTestSuiteRunner'  # NO!
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+NOSE_ARGS = [
+    # '--with-coverage',
+    # '--cover-html',
+    # '--with-xunit',
+    '--cover-package=' + (",".join(INSTALLED_PROJECT_APPS)),
+    '-s'  # No capture std out (any stdout output will be printed immediately)
 ]
+if 'PYCHARM_HOSTED' not in os.environ:
+    NOSE_ARGS = [
+        '--with-coverage',
+        '--cover-html',
+        # '--with-xunit',
+        '--cover-package=' + (",".join(INSTALLED_PROJECT_APPS)),
+        '-s'  # No capture std out (any stdout output will be printed immediately)
+    ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
