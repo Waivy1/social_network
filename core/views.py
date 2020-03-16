@@ -1,17 +1,21 @@
 from django.db import IntegrityError
-from django.views import View
-from . import models
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.core.exceptions import ObjectDoesNotExist
+
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.views import APIView
+
+from . import models
 from .helpers import input_validate, ValidationError, EmptyValueError
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class UserSignUp(View):
+class UserSignUp(APIView):
+    permission_classes = (AllowAny,)
+
     def post(self, request):
-        # todo: нагадати про дублювання коли написання юніт тестів
         try:
             input_login, input_password = input_validate(request, ['login', 'password'])
 
@@ -34,7 +38,9 @@ class UserSignUp(View):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class UserLogin(View):
+class UserLogin(APIView):
+    permission_classes = (AllowAny,)
+
     def post(self, request):
         try:
             input_login, input_password = input_validate(request, ['login', 'password'])
@@ -56,7 +62,7 @@ class UserLogin(View):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class CreatePost(View):
+class CreatePost(APIView):
     def post(self, request):
         try:
             input_text = input_validate(request, ['text'])
@@ -73,8 +79,9 @@ class CreatePost(View):
 
         return JsonResponse({'message': f'you created a post {input_text}'})
 
+
 @method_decorator(csrf_exempt, name='dispatch')
-class LikePost(View):
+class LikePost(APIView):
     def post(self, request):
         try:
             input_post_id, input_user_id = input_validate(request, ['post_id', 'user_id'])
@@ -84,7 +91,6 @@ class LikePost(View):
 
         except EmptyValueError as e:
             return JsonResponse({'message': 'value is empty'}, status=400)
-
 
         try:
             user_obj = models.User.objects.get(id=input_user_id)
@@ -114,7 +120,7 @@ class LikePost(View):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class DislikePost(View):
+class DislikePost(APIView):
     def post(self, request):
         try:
             input_post_id, input_user_id = input_validate(request, ['post_id', 'user_id'])
@@ -136,16 +142,6 @@ class DislikePost(View):
         liked_posts_obj.is_liked = False
         liked_posts_obj.save()
 
-
         return JsonResponse({'message': f'user {user_obj.login} disliked post {post_obj.text}, the post has '
                                         f'{liked_posts_obj.get_likes()} '
                                         f'likes'})
-
-
-
-
-
-
-
-
-
