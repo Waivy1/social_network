@@ -11,25 +11,39 @@ from . import models
 from .helpers import input_validate, ValidationError, EmptyValueError
 
 
+#learing decorators
+def validate(keys_to_check):
+    def decorator(func):
+        def wrapper(self, request, *args, **kwargs):
+            try:
+                input_validate(request, keys_to_check)
+
+            except ValidationError as e:
+                return JsonResponse({'message': f'validation error in {e.args[0]}'}, status=400)
+
+            except EmptyValueError as e:
+                return JsonResponse({'message': 'value is empty'}, status=400)
+
+            return func(self, request, *args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class UserSignUp(APIView):
     permission_classes = (AllowAny,)
+    keys = ['login', 'password']
 
+    @validate(keys)
     def post(self, request):
-        try:
-            input_login, input_password = input_validate(request, ['login', 'password'])
-
-        except ValidationError as e:
-            return JsonResponse({'message': f'validation error in {e.args[0]}'}, status=400)
-
-        except EmptyValueError as e:
-            return JsonResponse({'message': 'value is empty'}, status=400)
+        input_login, input_password = input_validate(request, self.keys)
 
         try:
             new_user = models.User(login=input_login, password=input_password)
             new_user.save()
 
-        # IntegrityError повторна реєстрація, юнік констрейн (аргемент в бд)
         except IntegrityError as e:
             return JsonResponse({'message': f'login \'{input_login}\' already '
                                             f'exist'}, status=400)
@@ -40,16 +54,13 @@ class UserSignUp(APIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class UserLogin(APIView):
     permission_classes = (AllowAny,)
+    keys = ['login', 'password']
 
+    @validate(keys)
     def post(self, request):
-        try:
-            input_login, input_password = input_validate(request, ['login', 'password'])
 
-        except ValidationError as e:
-            return JsonResponse({'message': f'validation error in {e.args[0]}'}, status=400)
+        input_login, input_password = input_validate(request, ['login', 'password'])
 
-        except EmptyValueError as e:
-            return JsonResponse({'message': 'value is empty'}, status=400)
 
         try:
             models.User.objects.get(login=input_login, password=input_password)
@@ -63,6 +74,9 @@ class UserLogin(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CreatePost(APIView):
+    keys = ['text']
+
+    @validate(keys)
     def post(self, request):
         try:
             input_text = input_validate(request, ['text'])
@@ -82,15 +96,13 @@ class CreatePost(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class LikePost(APIView):
+    keys = ['post_id', 'user_id']
+
+    @validate(keys)
     def post(self, request):
-        try:
-            input_post_id, input_user_id = input_validate(request, ['post_id', 'user_id'])
 
-        except ValidationError as e:
-            return JsonResponse({'message': f'validation error in {e.args[0]}'}, status=400)
+        input_post_id, input_user_id = input_validate(request, self.keys)
 
-        except EmptyValueError as e:
-            return JsonResponse({'message': 'value is empty'}, status=400)
 
         try:
             user_obj = models.User.objects.get(id=input_user_id)
@@ -121,15 +133,12 @@ class LikePost(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class DislikePost(APIView):
+    keys = ['post_id', 'user_id']
+
+    @validate(keys)
     def post(self, request):
-        try:
-            input_post_id, input_user_id = input_validate(request, ['post_id', 'user_id'])
 
-        except ValidationError as e:
-            return JsonResponse({'message': f'validation error in {e.args[0]}'}, status=400)
-
-        except EmptyValueError as e:
-            return JsonResponse({'message': 'value is empty'}, status=400)
+        input_post_id, input_user_id = input_validate(request, self.keys)
 
 
         try:

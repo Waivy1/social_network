@@ -98,7 +98,7 @@ class LikePostTestCase(TestCase):
     def _create_disliked_post(self):
         self.user_id_disliked = self.user_id + 10
         self.post_id_disliked = self.post_id + 10
-        self.disliked_post = randint(1, 1337) #48
+        self.disliked_post = randint(1, 1337)
 
         user_obj = models.User(id=self.user_id_disliked, login=self.user_id_disliked, password=1337)
         user_obj.save()
